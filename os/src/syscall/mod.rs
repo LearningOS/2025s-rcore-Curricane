@@ -10,13 +10,19 @@
 //! `sys_` then the name of the syscall. You can find functions like this in
 //! submodules, and you should also implement syscalls this way.
 
+/// Syscall numbers
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(usize)]
 pub enum Syscall {
+    /// SYSCALL_WRITE
     Write = SYSCALL_WRITE,
+    /// SYSCALL_EXIT
     Exit = SYSCALL_EXIT,
+    /// SYSCALL_YIELD
     Yield = SYSCALL_YIELD,
+    /// SYSCALL_GET_TIME
     GetTime = SYSCALL_GET_TIME,
+    /// SYSCALL_TRACE
     Trace = SYSCALL_TRACE,
 }
 
@@ -30,7 +36,7 @@ impl TryFrom<usize> for Syscall {
             SYSCALL_YIELD => Ok(Syscall::Yield),
             SYSCALL_GET_TIME => Ok(Syscall::GetTime),
             SYSCALL_TRACE => Ok(Syscall::Trace),
-            _ => Err(format!("Invalid syscall number {}", value)),
+            _ => Err("Invalid syscall number"),
         }
     }
 }
@@ -42,6 +48,7 @@ impl From<Syscall> for usize {
 }
 
 impl Syscall {
+    /// index of syscall in the system call array
     pub fn idx(self) -> usize {
         match self {
             Syscall::Write => 0,
@@ -50,10 +57,6 @@ impl Syscall {
             Syscall::GetTime => 3,
             Syscall::Trace => 4,
         }
-    }
-
-    pub fn count() -> usize {
-        5
     }
 }
 

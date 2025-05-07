@@ -12,22 +12,17 @@ pub struct TaskControlBlock {
     /// The task context
     pub task_cx: TaskContext,
 
+    /// The number of syscalls made by the task
     pub syscall_count: SyscallCounts,
-}
-
-impl TaskControlBlock {
-    pub fn new(id: usize) -> Self {
-        Self {
-            task_status: TaskStatus::UnInit,
-            task_cx: TaskContext::zero_init(),
-            syscall_count: SyscallCounts,
-        }
-    }
 }
 
 impl Default for TaskControlBlock {
     fn default() -> Self {
-        Self::new(0)
+        Self {
+            task_status: TaskStatus::UnInit,
+            task_cx: TaskContext::zero_init(),
+            syscall_count: SyscallCounts::default(),
+        }
     }
 }
 
@@ -44,15 +39,20 @@ pub enum TaskStatus {
     Exited,
 }
 
+/// The counts of syscalls made by a task
+#[derive(Copy, Clone, Default)]
 pub struct SyscallCounts {
-    pub counts: [usize; Syscall::count()],
+    /// The counts of each syscall
+    pub counts: [usize; 5],
 }
 
 impl SyscallCounts {
+    /// Increment the count of a specific syscall
     pub fn add_one(&mut self, syscall: Syscall) {
         self.counts[syscall.idx()] += 1;
     }
 
+    /// Get the count of a specific syscall
     pub fn get(&self, syscall: Syscall) -> usize {
         self.counts[syscall.idx()]
     }

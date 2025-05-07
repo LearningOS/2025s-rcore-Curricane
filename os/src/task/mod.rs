@@ -133,6 +133,7 @@ impl TaskManager {
         }
     }
 
+    /// Add one to the syscall count of the syscall_id of the current task.
     fn current_task_syscall_count_add_one(&self, syscall_id: usize) {
         let mut inner = self.inner.exclusive_access();
         let current = inner.current_task;
@@ -176,6 +177,7 @@ pub fn exit_current_and_run_next() {
     run_next_task();
 }
 
+/// Add one to the syscall count of the syscall_id of the current task.
 pub fn current_task_syscall_count_add_one(syscall_id: usize) {
     TASK_MANAGER.current_task_syscall_count_add_one(syscall_id);
 }
