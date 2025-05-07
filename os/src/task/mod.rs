@@ -51,10 +51,7 @@ lazy_static! {
     /// Global variable: TASK_MANAGER
     pub static ref TASK_MANAGER: TaskManager = {
         let num_app = get_num_app();
-        let mut tasks = [TaskControlBlock {
-            task_cx: TaskContext::zero_init(),
-            task_status: TaskStatus::UnInit,
-        }; MAX_APP_NUM];
+        let mut tasks = [TaskControlBlock::default(); MAX_APP_NUM];
         for (i, task) in tasks.iter_mut().enumerate() {
             task.task_cx = TaskContext::goto_restore(init_app_cx(i));
             task.task_status = TaskStatus::Ready;
@@ -135,6 +132,15 @@ impl TaskManager {
             panic!("All applications completed!");
         }
     }
+
+    fn current_task_syscall_count_add_one(&self, syscall_id: usize) {
+        let mut inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current]
+            .syscall_count
+            .add_one(syscall_id.try_into().unwrap());
+        drop(inner)
+    }
 }
 
 /// Run the first task in task list.
@@ -168,4 +174,8 @@ pub fn suspend_current_and_run_next() {
 pub fn exit_current_and_run_next() {
     mark_current_exited();
     run_next_task();
+}
+
+pub fn current_task_syscall_count_add_one(syscall_id: usize) {
+    TASK_MANAGER.current_task_syscall_count_add_one(syscall_id);
 }

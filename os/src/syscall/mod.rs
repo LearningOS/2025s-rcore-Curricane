@@ -10,6 +10,53 @@
 //! `sys_` then the name of the syscall. You can find functions like this in
 //! submodules, and you should also implement syscalls this way.
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[repr(usize)]
+pub enum Syscall {
+    Write = SYSCALL_WRITE,
+    Exit = SYSCALL_EXIT,
+    Yield = SYSCALL_YIELD,
+    GetTime = SYSCALL_GET_TIME,
+    Trace = SYSCALL_TRACE,
+}
+
+impl TryFrom<usize> for Syscall {
+    type Error = &'static str;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        match value {
+            SYSCALL_WRITE => Ok(Syscall::Write),
+            SYSCALL_EXIT => Ok(Syscall::Exit),
+            SYSCALL_YIELD => Ok(Syscall::Yield),
+            SYSCALL_GET_TIME => Ok(Syscall::GetTime),
+            SYSCALL_TRACE => Ok(Syscall::Trace),
+            _ => Err(format!("Invalid syscall number {}", value)),
+        }
+    }
+}
+
+impl From<Syscall> for usize {
+    fn from(sc: Syscall) -> usize {
+        sc as usize
+    }
+}
+
+impl Syscall {
+    pub fn idx(self) -> usize {
+        match self {
+            Syscall::Write => 0,
+            Syscall::Exit => 1,
+            Syscall::Yield => 2,
+            Syscall::GetTime => 3,
+            Syscall::Trace => 4,
+        }
+    }
+
+    pub fn count() -> usize {
+        5
+    }
+}
+
 /// write syscall
 const SYSCALL_WRITE: usize = 64;
 /// exit syscall
@@ -27,8 +74,11 @@ mod process;
 use fs::*;
 use process::*;
 
+use crate::task::current_task_syscall_count_add_one;
+
 /// handle syscall exception with `syscall_id` and other arguments
 pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
+    current_task_syscall_count_add_one(syscall_id);
     match syscall_id {
         SYSCALL_WRITE => sys_write(args[0], args[1] as *const u8, args[2]),
         SYSCALL_EXIT => sys_exit(args[0] as i32),
