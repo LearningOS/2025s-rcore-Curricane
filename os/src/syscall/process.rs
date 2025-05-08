@@ -2,7 +2,7 @@
 use core::isize;
 
 use crate::{
-    task::{exit_current_and_run_next, suspend_current_and_run_next},
+    task::{current_task_syscall_count, exit_current_and_run_next, suspend_current_and_run_next},
     timer::get_time_us,
 };
 
@@ -55,9 +55,7 @@ pub fn sys_trace(trace_request: usize, id: usize, data: usize) -> isize {
             unsafe { addr.write_volatile(val) };
             0
         }
-        2 => {
-            todo!()
-        }
+        2 => current_task_syscall_count(id) as isize,
         _ => -1,
     }
 }

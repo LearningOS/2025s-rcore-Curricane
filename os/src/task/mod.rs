@@ -142,6 +142,15 @@ impl TaskManager {
             .add_one(syscall_id.try_into().unwrap());
         drop(inner)
     }
+
+    /// Get the syscall count of the syscall_id of the current task.
+    fn current_task_syscall_count(&self, syscall_id: usize) -> usize {
+        let inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current]
+            .syscall_count
+            .get(syscall_id.try_into().unwrap())
+    }
 }
 
 /// Run the first task in task list.
@@ -180,4 +189,9 @@ pub fn exit_current_and_run_next() {
 /// Add one to the syscall count of the syscall_id of the current task.
 pub fn current_task_syscall_count_add_one(syscall_id: usize) {
     TASK_MANAGER.current_task_syscall_count_add_one(syscall_id);
+}
+
+/// Get the syscall count of the syscall_id of the current task.
+pub fn current_task_syscall_count(syscall_id: usize) -> usize {
+    TASK_MANAGER.current_task_syscall_count(syscall_id)
 }
